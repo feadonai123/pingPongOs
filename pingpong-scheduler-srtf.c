@@ -53,7 +53,7 @@ void Body (void * arg)
     }
 
     if ((last_printed_line+5) <= systime()) {
-      printf ("[%d]\t%s: interacao %d\t\t%d\n", systime(), (char *) arg, end_time, taskExec->running_time) ;
+      printf ("[%d]\t%s: interacao %d\t\t%d\t%d\n", systime(), (char *) arg, end_time, taskExec->running_time, taskExec->quantum) ;
       last_printed_line = systime();
     }
 

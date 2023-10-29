@@ -13,10 +13,18 @@ struct itimerval timer ;
 
 #define TASK_TYPE_SYSTEM 0
 #define TASK_TYPE_USER 1
+#define INIT_QUANTUM 20
 
-void tratador (int signum)
+void ticks_handler (int signum)
 {
     systemTime++;
+    if(taskExec->type == TASK_TYPE_USER){
+        if(taskExec->quantum > 0){
+            taskExec->quantum--;
+        }else{
+            task_yield();
+        }
+    }
 }
 
 int task_get_eet(task_t *task){
@@ -66,7 +74,7 @@ void after_ppos_init () {
     taskMain->estimate_time = 9999;
     taskMain->running_time = 0;
     // adciona uma função de callback para o evento SIGALRM
-    action.sa_handler = tratador ;
+    action.sa_handler = ticks_handler ;
     sigemptyset (&action.sa_mask) ;
     action.sa_flags = 0 ;
     if (sigaction (SIGALRM, &action, 0) < 0)
@@ -131,6 +139,7 @@ void after_task_switch ( task_t *task ) {
 #ifdef DEBUG
     printf("\ntask_switch - AFTER - [%d -> %d]", taskExec->id, task->id);
 #endif
+    task->quantum = INIT_QUANTUM;
 }
 
 void before_task_yield () {
@@ -465,15 +474,19 @@ int after_mqueue_msgs (mqueue_t *queue) {
 task_t * scheduler() {
     // FCFS scheduler
     if ( readyQueue != NULL ) {
+        // printf("\n ===== scheduler inicio =====");
         task_t *taskAux = readyQueue;
         task_t *taskMin = readyQueue;
         do{
+            // printf("\nTarefa %d, estimate_time: %d, running_time: %d, quantum: %d\n", taskAux->id, taskAux->estimate_time, taskAux->running_time, taskAux->quantum);
             if(taskAux->estimate_time - taskAux->running_time < taskMin->estimate_time - taskMin->running_time){
                 taskMin = taskAux;
             }
 
             taskAux = taskAux->next;
         } while (taskAux != readyQueue);
+        // printf("\nTarefa escolhida: %d", taskMin->id);
+        // printf("\n ===== scheduler fim =====");
 
         return taskMin;
     }
