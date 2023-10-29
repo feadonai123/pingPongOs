@@ -39,9 +39,8 @@ void task_set_eet(task_t *task, int estimate_time){
     if(task == NULL){
         task = taskExec;
     }
-    if(task->estimate_time != -1){
-        task->running_time += task->estimate_time - estimate_time;
-    } else{
+    
+    if(task->estimate_time == -1){
         task->estimate_time = estimate_time;
     }
 }
