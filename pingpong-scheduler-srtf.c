@@ -4,6 +4,7 @@
 
 // Teste do escalonador por prioridades dinâmicas
 
+// comando: gcc -o teste ppos-core-aux.c libppos_static.a pingpong-scheduler-srtf.c
 #include <stdio.h>
 #include <stdlib.h>
 #include "ppos.h"
@@ -18,7 +19,7 @@ char user_tasks_names[USER_TASKS_MAX][15];
 //int user_tasks_execution_time[USER_TASKS_MAX] = {1000, 900, 800, 700, 600, 500, 400, 300, 200, 100}; // cenario 2
 // int user_tasks_execution_time[USER_TASKS_MAX] = {30, 50, 70, 90, 110 }; // 130, 150, 170, 190, 210}; // cenario 3
 //int user_tasks_execution_time[USER_TASKS_MAX] = {210, 190, 170, 150, 130, 110, 90, 70, 50, 30}; // cenario 4
-int user_tasks_execution_time[USER_TASKS_MAX] = {100, 90, 80, 70, 60 }; // 130, 150, 170, 190, 210}; // meu cenario
+int user_tasks_execution_time[USER_TASKS_MAX] = {110, 90, 70, 50, 30 }; // 130, 150, 170, 190, 210}; // meu cenario
 
 int one_tick = 0;
 
@@ -43,17 +44,11 @@ void Body (void * arg)
   // se for o caso, esse campo pode ser trocado conforme a implementacao de cada equipe
   // o que importa eh esse loop sair somente se a tarefa realmente executou o X tempo que
   // foi indicado como seu tempo de execucao
-  long lastTick = end_time;
   while (taskExec->running_time < task_get_eet(NULL)) {
     end_time--;
 
-    if(lastTick - end_time >= one_tick){
-      lastTick = end_time;
-      task_set_eet(taskExec, task_get_eet(NULL) - 1);
-    }
-
     if ((last_printed_line+5) <= systime()) {
-      printf ("[%d]\t%s: interacao %d\t\t%d\t%d\n", systime(), (char *) arg, end_time, taskExec->running_time, taskExec->quantum) ;
+      printf ("[%d]\t%s: interacao %d\t\t%d\n", systime(), (char *) arg, end_time, taskExec->running_time) ;
       last_printed_line = systime();
     }
 
@@ -81,16 +76,13 @@ int main (int argc, char *argv[])
   ppos_init () ;
 
   // waiting for the first 100ms
-  while (systime() <= 100) ;
+  while (systime() <= 0) ;
 
   // estimate how many iterations is a miliseconds
   // calcular tick usando média de 100 ticks
-  for (i=0; i<100; i++) {
-    aux_time = systime() + 1;
-    while (systime() < aux_time)
-      one_tick++;
-  }
-  one_tick = one_tick / 100;
+  aux_time = systime() + 1;
+  while (systime() < aux_time)
+    one_tick++;
 
   printf("Loop iterations to microseconds = %d\n", one_tick);
 

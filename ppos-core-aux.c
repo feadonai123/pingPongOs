@@ -19,6 +19,7 @@ void ticks_handler (int signum)
 {
     systemTime++;
     if(taskExec->type == TASK_TYPE_USER){
+        taskExec->running_time++;
         if(taskExec->quantum > 0){
             taskExec->quantum--;
         }else{
@@ -111,6 +112,8 @@ void after_task_create (task_t *task ) {
     task->type = TASK_TYPE_USER;
     task->estimate_time = -1;
     task->running_time = 0;
+    task->activations = 0;
+    task->start_time = systime();
 }
 
 void before_task_exit () {
@@ -125,6 +128,7 @@ void after_task_exit () {
 #ifdef DEBUG
     printf("\ntask_exit - AFTER- [%d]", taskExec->id);
 #endif
+    printf("\nTask %d exit: execution time %d ms, processor time %d ms, %d activations\n", taskExec->id, systime() - taskExec->start_time, taskExec->running_time, taskExec->activations);
 }
 
 void before_task_switch ( task_t *task ) {
@@ -140,6 +144,7 @@ void after_task_switch ( task_t *task ) {
     printf("\ntask_switch - AFTER - [%d -> %d]", taskExec->id, task->id);
 #endif
     task->quantum = INIT_QUANTUM;
+    task->activations++;
 }
 
 void before_task_yield () {
@@ -474,19 +479,15 @@ int after_mqueue_msgs (mqueue_t *queue) {
 task_t * scheduler() {
     // FCFS scheduler
     if ( readyQueue != NULL ) {
-        // printf("\n ===== scheduler inicio =====");
         task_t *taskAux = readyQueue;
         task_t *taskMin = readyQueue;
         do{
-            // printf("\nTarefa %d, estimate_time: %d, running_time: %d, quantum: %d\n", taskAux->id, taskAux->estimate_time, taskAux->running_time, taskAux->quantum);
             if(taskAux->estimate_time - taskAux->running_time < taskMin->estimate_time - taskMin->running_time){
                 taskMin = taskAux;
             }
 
             taskAux = taskAux->next;
         } while (taskAux != readyQueue);
-        // printf("\nTarefa escolhida: %d", taskMin->id);
-        // printf("\n ===== scheduler fim =====");
 
         return taskMin;
     }
