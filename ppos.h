@@ -292,3 +292,8 @@ void print_tcb( task_t* task );
 #define PPOS_IS_PREEMPT_ACTIVE (preemption == 1)
 
 #endif
+
+unsigned int get_time_ms();
+int task_get_eet(task_t *task);
+void task_set_eet(task_t *task, int estimate_time);
+int task_get_ret(task_t *task);
