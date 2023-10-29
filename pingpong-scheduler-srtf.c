@@ -20,7 +20,7 @@ char user_tasks_names[USER_TASKS_MAX][15];
 //int user_tasks_execution_time[USER_TASKS_MAX] = {210, 190, 170, 150, 130, 110, 90, 70, 50, 30}; // cenario 4
 int user_tasks_execution_time[USER_TASKS_MAX] = {100, 90, 80, 70, 60 }; // 130, 150, 170, 190, 210}; // meu cenario
 
-long int one_tick = 0;
+int one_tick = 0;
 
 int new_tasks_count = 0;
 char new_task_name[15];
@@ -33,11 +33,11 @@ int last_created_task = 0;
 void Body (void * arg)
 {
   int i ;
-  long end_time = one_tick * task_get_eet(NULL);
+  int end_time = one_tick * task_get_eet(NULL);
   int last_printed_line = 0;
 
-  printf ("[%d]\t%s: inicio (tempo de execucao %d)\n", get_time_ms(), (char *) arg, task_get_eet(NULL)) ;
-  last_printed_line = get_time_ms();
+  printf ("[%d]\t%s: inicio (tempo de execucao %d)\n", systime(), (char *) arg, task_get_eet(NULL)) ;
+  last_printed_line = systime();
 
   // o campo taskExec->running_time indica o tempo que a tarefa executou ate o momento
   // se for o caso, esse campo pode ser trocado conforme a implementacao de cada equipe
@@ -52,26 +52,23 @@ void Body (void * arg)
       task_set_eet(taskExec, task_get_eet(NULL) - 1);
     }
 
-    if ((last_printed_line+5) <= get_time_ms()) {
-      printf ("[%d]\t%s: interacao %ld\t\t%d\n", get_time_ms(), (char *) arg, end_time, taskExec->running_time) ;
-      last_printed_line = get_time_ms();
+    if ((last_printed_line+5) <= systime()) {
+      printf ("[%d]\t%s: interacao %d\t\t%d\n", systime(), (char *) arg, end_time, taskExec->running_time) ;
+      last_printed_line = systime();
     }
 
-    if ((last_created_task != get_time_ms()) && (get_time_ms()%100) == 0) {
-      last_created_task = get_time_ms();
+    if ((last_created_task != systime()) && (systime()%100) == 0) {
+      last_created_task = systime();
       // cria uma tarefa com prioridade mais alta
       sprintf(new_task_name, "NEWTask[%2d]", new_tasks_count);
       printf("Criando NOVA tarefa: %s\n", new_task_name);
       task_create (&new_user_tasks[new_tasks_count], Body, &new_task_name) ;
       task_set_eet(&new_user_tasks[new_tasks_count], 15);
-      printf("\nTarefa id %d prioridade %d\n", new_user_tasks[new_tasks_count].id, task_get_eet(&new_user_tasks[new_tasks_count]));
       new_tasks_count++;
       task_yield();
-      // a chamada task_create no before está OK, no after está criando uma tarefa em readyQueue com id zero
-      // dessa froma, após chegar aqui, o código está encerrando
     }
   }
-  printf ("[%d]\t%s: fim\n", get_time_ms(), (char *) arg) ;
+  printf ("[%d]\t%s: fim\n", systime(), (char *) arg) ;
   task_exit (0) ;
 }
 
@@ -83,25 +80,19 @@ int main (int argc, char *argv[])
 
   ppos_init () ;
 
-  // waiting for the first microsecond
-  while (get_time_ms() <= 100) ;
-  // estimate how many iterations is a microsecond
-  /*aux_time = get_time_ms() + 1;
-  while (get_time_ms() < aux_time)
-    one_tick++;*/
-  // adjusting value
-  // one_tick = (one_tick*90)/100;
+  // waiting for the first 100ms
+  while (systime() <= 100) ;
 
-  // calcular tick usando média de 10 ticks
+  // estimate how many iterations is a miliseconds
+  // calcular tick usando média de 100 ticks
   for (i=0; i<100; i++) {
-    aux_time = get_time_ms() + 1;
-    while (get_time_ms() < aux_time)
+    aux_time = systime() + 1;
+    while (systime() < aux_time)
       one_tick++;
   }
   one_tick = one_tick / 100;
 
-
-  printf("Loop iterations to microseconds = %ld\n", one_tick);
+  printf("Loop iterations to microseconds = %d\n", one_tick);
 
 
   // creating tasks

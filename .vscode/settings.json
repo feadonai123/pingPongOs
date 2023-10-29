@@ -1,0 +1,6 @@
+{
+  "files.associations": {
+    "ppos.h": "c",
+    "ppos-core-globals.h": "c"
+  }
+}

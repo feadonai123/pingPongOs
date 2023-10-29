@@ -293,7 +293,6 @@ void print_tcb( task_t* task );
 
 #endif
 
-unsigned int get_time_ms();
 int task_get_eet(task_t *task);
 void task_set_eet(task_t *task, int estimate_time);
 int task_get_ret(task_t *task);
